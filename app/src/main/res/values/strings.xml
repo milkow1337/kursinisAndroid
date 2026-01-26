@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Prif233</string>
+    <string name="history_en">View history</string>
+    <string name="update_btn_en">My info</string>
+    <string name="login_btn_en">Log in</string>
+    <string name="register_btn_en">New account</string>
+    <string name="save_user_btn_en">Create!</string>
+</resources>
