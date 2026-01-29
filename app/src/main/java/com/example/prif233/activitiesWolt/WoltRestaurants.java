@@ -35,6 +35,7 @@ import java.util.concurrent.Executors;
 public class WoltRestaurants extends AppCompatActivity {
 
     User currentUser;
+    String userInfoJson;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,16 +48,13 @@ public class WoltRestaurants extends AppCompatActivity {
             return insets;
         });
 
-        //Priejimas prie duomenu is praeitos Activity
-
         Intent intent = getIntent();
-        String userInfo = intent.getStringExtra("userJsonObject");
-
+        userInfoJson = intent.getStringExtra("userJsonObject");
 
         GsonBuilder build = new GsonBuilder();
         build.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
         Gson gson = build.setPrettyPrinting().create();
-        currentUser = gson.fromJson(userInfo, User.class);
+        currentUser = gson.fromJson(userInfoJson, User.class);
 
         if (currentUser instanceof Driver) {
 
@@ -69,21 +67,16 @@ public class WoltRestaurants extends AppCompatActivity {
             executor.execute(() -> {
                 try {
                     String response = RestOperations.sendGet(GET_ALL_RESTAURANTS_URL);
-                    System.out.println(response);
                     handler.post(() -> {
                         try {
                             if (!response.equals("Error")) {
-                                //Cia yra dalis, kaip is json, kuriame yra [{},{}, {},...] paversti i List is Restoranu
-
                                 GsonBuilder gsonBuilder = new GsonBuilder();
                                 gsonBuilder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
                                 Gson gsonRestaurants = gsonBuilder.setPrettyPrinting().create();
                                 Type restaurantListType = new TypeToken<List<Restaurant>>() {
                                 }.getType();
                                 List<Restaurant> restaurantListFromJson = gsonRestaurants.fromJson(response, restaurantListType);
-                                //Json parse end
 
-                                //Reikia tuos duomenis, kuriuos ka tik isparsinau is json, atvaizduoti grafiniam elemente
                                 ListView restaurantListElement = findViewById(R.id.restaurantList);
                                 RestaurantAdapter adapter = new RestaurantAdapter(this, restaurantListFromJson);
                                 restaurantListElement.setAdapter(adapter);
@@ -95,8 +88,6 @@ public class WoltRestaurants extends AppCompatActivity {
                                     intentMenu.putExtra("userId", currentUser.getId());
                                     startActivity(intentMenu);
                                 });
-
-
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -107,7 +98,6 @@ public class WoltRestaurants extends AppCompatActivity {
                 }
             });
         }
-
     }
 
     public void viewPurchaseHistory(View view) {
@@ -117,6 +107,8 @@ public class WoltRestaurants extends AppCompatActivity {
     }
 
     public void viewMyAccount(View view) {
-        //Arba naujas activity arba fragmentas - account redagavimo forma
+        Intent intent = new Intent(WoltRestaurants.this, UserInfoActivity.class);
+        intent.putExtra("userJsonObject", userInfoJson);
+        startActivity(intent);
     }
 }

@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -31,7 +32,6 @@ import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -41,9 +41,11 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
 
     private int userId;
     private int restaurantId;
+    private String restaurantName;
     private MenuAdapter menuAdapter;
     private TextView orderTotalTextView;
     private TextView orderItemsCountTextView;
+    private View placeOrderButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,9 +61,16 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
         Intent intent = getIntent();
         userId = intent.getIntExtra("userId", 0);
         restaurantId = intent.getIntExtra("restaurantId", 0);
+        restaurantName = intent.getStringExtra("restaurantName");
+
+        // Set action bar title if available
+        if (getSupportActionBar() != null && restaurantName != null) {
+            getSupportActionBar().setTitle(restaurantName);
+        }
 
         orderTotalTextView = findViewById(R.id.orderTotal);
         orderItemsCountTextView = findViewById(R.id.orderItemsCount);
+        placeOrderButton = findViewById(R.id.btnPlaceOrder);
 
         loadMenu();
     }
@@ -70,35 +79,61 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
         Executor executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
+        // Show loading state
+        runOnUiThread(() -> {
+            if (placeOrderButton != null) {
+                placeOrderButton.setEnabled(false);
+            }
+        });
+
         executor.execute(() -> {
             try {
                 String response = RestOperations.sendGet(GET_RESTAURANT_MENU + restaurantId);
-                System.out.println(response);
+                System.out.println("Menu response: " + response);
+
                 handler.post(() -> {
                     try {
-                        if (!response.equals("Error")) {
+                        if (!response.equals("Error") && !response.isEmpty()) {
                             GsonBuilder gsonBuilder = new GsonBuilder();
                             gsonBuilder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
                             Gson gsonMenu = gsonBuilder.setPrettyPrinting().create();
-                            Type menuListType = new TypeToken<List<Cuisine>>() {
-                            }.getType();
+                            Type menuListType = new TypeToken<List<Cuisine>>() {}.getType();
                             List<Cuisine> menuListFromJson = gsonMenu.fromJson(response, menuListType);
-                            
+
+                            if (menuListFromJson == null || menuListFromJson.isEmpty()) {
+                                Toast.makeText(this, "No menu items available", Toast.LENGTH_SHORT).show();
+                                finish();
+                                return;
+                            }
+
                             ListView menuListElement = findViewById(R.id.menuItems);
                             menuAdapter = new MenuAdapter(this, menuListFromJson);
                             menuListElement.setAdapter(menuAdapter);
-                            
+
+                            // Enable order button
+                            if (placeOrderButton != null) {
+                                placeOrderButton.setEnabled(true);
+                            }
+
                             // Update order summary
                             updateOrderSummary();
+                        } else {
+                            Toast.makeText(this, "Failed to load menu", Toast.LENGTH_SHORT).show();
+                            finish();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
-                        Toast.makeText(this, "Error loading menu", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Error parsing menu: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                        finish();
                     }
                 });
             } catch (IOException e) {
+                e.printStackTrace();
                 handler.post(() -> {
-                    Toast.makeText(this, "Network error", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Network error: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                    finish();
                 });
             }
         });
@@ -109,7 +144,7 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
 
         Map<Integer, Integer> quantities = menuAdapter.getQuantities();
         List<Cuisine> menuItems = menuAdapter.getMenuItems();
-        
+
         double total = 0.0;
         int itemCount = 0;
 
@@ -121,8 +156,18 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
             }
         }
 
-        orderTotalTextView.setText(String.format("Total: €%.2f", total));
-        orderItemsCountTextView.setText(String.format("Items: %d", itemCount));
+        final double finalTotal = total;
+        final int finalItemCount = itemCount;
+
+        runOnUiThread(() -> {
+            orderTotalTextView.setText(String.format("Total: €%.2f", finalTotal));
+            orderItemsCountTextView.setText(String.format("Items: %d", finalItemCount));
+
+            // Enable/disable order button based on cart
+            if (placeOrderButton != null) {
+                placeOrderButton.setEnabled(finalItemCount > 0);
+            }
+        });
     }
 
     public void placeOrder(View view) {
@@ -147,6 +192,47 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
             return;
         }
 
+        // Show confirmation dialog
+        showOrderConfirmation(quantities, menuItems);
+    }
+
+    private void showOrderConfirmation(Map<Integer, Integer> quantities, List<Cuisine> menuItems) {
+        // Calculate total
+        double total = 0.0;
+        int itemCount = 0;
+        StringBuilder orderSummary = new StringBuilder();
+        orderSummary.append("Order Summary:\n\n");
+
+        for (Cuisine cuisine : menuItems) {
+            int quantity = quantities.getOrDefault(cuisine.getId(), 0);
+            if (quantity > 0) {
+                total += cuisine.getPrice() * quantity;
+                itemCount += quantity;
+                orderSummary.append(String.format("%dx %s - €%.2f\n",
+                        quantity, cuisine.getName(), cuisine.getPrice() * quantity));
+            }
+        }
+
+        orderSummary.append(String.format("\nTotal: €%.2f", total));
+
+        final double finalTotal = total;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Confirm Order");
+        builder.setMessage(orderSummary.toString());
+        builder.setPositiveButton("Place Order", (dialog, which) -> {
+            submitOrder(quantities, menuItems);
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    private void submitOrder(Map<Integer, Integer> quantities, List<Cuisine> menuItems) {
+        // Disable button to prevent double submission
+        if (placeOrderButton != null) {
+            placeOrderButton.setEnabled(false);
+        }
+
         Gson gson = new Gson();
         JsonObject orderJson = new JsonObject();
         orderJson.addProperty("userId", userId);
@@ -165,6 +251,7 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
         orderJson.add("items", itemsArray);
 
         String orderData = gson.toJson(orderJson);
+        System.out.println("Sending order: " + orderData);
 
         Executor executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
@@ -173,22 +260,46 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
             try {
                 String response = RestOperations.sendPost(CREATE_ORDER, orderData);
                 System.out.println("Order response: " + response);
+
                 handler.post(() -> {
                     if (!response.equals("Error") && !response.isEmpty()) {
-                        Toast.makeText(this, "Order placed successfully!", Toast.LENGTH_SHORT).show();
-                        // Clear the cart
-                        menuAdapter.getQuantities().clear();
-                        menuAdapter.notifyDataSetChanged();
-                        updateOrderSummary();
-                        // Optionally go back to restaurants list
-                        finish();
+                        Toast.makeText(this, "Order placed successfully!",
+                                Toast.LENGTH_LONG).show();
+
+                        // Show success dialog
+                        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                        builder.setTitle("Success!");
+                        builder.setMessage("Your order has been placed. You can track it in 'My Orders'.");
+                        builder.setPositiveButton("View My Orders", (dialog, which) -> {
+                            Intent intent = new Intent(this, MyOrders.class);
+                            intent.putExtra("id", userId);
+                            startActivity(intent);
+                            finish();
+                        });
+                        builder.setNegativeButton("Continue Shopping", (dialog, which) -> {
+                            finish();
+                        });
+                        builder.setCancelable(false);
+                        builder.show();
+
                     } else {
-                        Toast.makeText(this, "Failed to place order", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Failed to place order. Please try again.",
+                                Toast.LENGTH_LONG).show();
+                        // Re-enable button
+                        if (placeOrderButton != null) {
+                            placeOrderButton.setEnabled(true);
+                        }
                     }
                 });
             } catch (IOException e) {
+                e.printStackTrace();
                 handler.post(() -> {
-                    Toast.makeText(this, "Network error", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Network error: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                    // Re-enable button
+                    if (placeOrderButton != null) {
+                        placeOrderButton.setEnabled(true);
+                    }
                 });
             }
         });
@@ -197,5 +308,34 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnQua
     @Override
     public void onQuantityChanged() {
         updateOrderSummary();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (menuAdapter != null) {
+            Map<Integer, Integer> quantities = menuAdapter.getQuantities();
+            boolean hasItems = false;
+            for (int qty : quantities.values()) {
+                if (qty > 0) {
+                    hasItems = true;
+                    break;
+                }
+            }
+
+            if (hasItems) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Discard Order?");
+                builder.setMessage("You have items in your cart. Are you sure you want to go back?");
+                builder.setPositiveButton("Yes", (dialog, which) -> {
+                    super.onBackPressed();
+                });
+                builder.setNegativeButton("No", null);
+                builder.show();
+            } else {
+                super.onBackPressed();
+            }
+        } else {
+            super.onBackPressed();
+        }
     }
 }

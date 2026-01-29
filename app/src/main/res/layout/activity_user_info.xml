@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activitiesWolt.RegistrationActivity">
+    tools:context=".activitiesWolt.UserInfoActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -21,11 +21,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Login"
-                app:layout_constraintStart_toStartOf="@+id/regLoginField"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <EditText
-                android:id="@+id/regLoginField"
+                android:id="@+id/updateLoginField"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
@@ -38,11 +38,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Password"
-                app:layout_constraintStart_toStartOf="@+id/regPasswordField"
-                app:layout_constraintTop_toBottomOf="@+id/regLoginField" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/updateLoginField" />
 
             <EditText
-                android:id="@+id/regPasswordField"
+                android:id="@+id/updatePasswordField"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
@@ -55,11 +55,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Name"
-                app:layout_constraintStart_toStartOf="@+id/regNameField"
-                app:layout_constraintTop_toBottomOf="@+id/regPasswordField" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/updatePasswordField" />
 
             <EditText
-                android:id="@+id/regNameField"
+                android:id="@+id/updateNameField"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
@@ -72,11 +72,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Surname"
-                app:layout_constraintStart_toStartOf="@+id/regSurnameField"
-                app:layout_constraintTop_toBottomOf="@+id/regNameField" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/updateNameField" />
 
             <EditText
-                android:id="@+id/regSurnameField"
+                android:id="@+id/updateSurnameField"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
@@ -89,82 +89,27 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Phone"
-                app:layout_constraintStart_toStartOf="@+id/regPhoneField"
-                app:layout_constraintTop_toBottomOf="@+id/regSurnameField" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/updateSurnameField" />
 
             <EditText
-                android:id="@+id/regPhoneField"
+                android:id="@+id/updatePhoneField"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="phone"
                 app:layout_constraintTop_toBottomOf="@+id/labelPhone" />
 
-            <CheckBox
-                android:id="@+id/regIsDriver"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Driver"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/regPhoneField" />
-
-            <LinearLayout
-                android:id="@+id/driverFieldsContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone"
-                app:layout_constraintTop_toBottomOf="@+id/regIsDriver">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="License Number" />
-
-                <EditText
-                    android:id="@+id/regLicenseField"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="text" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Birth Date (YYYY-MM-DD)" />
-
-                <EditText
-                    android:id="@+id/regBirthDateField"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="date" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Vehicle Type" />
-
-                <Spinner
-                    android:id="@+id/regVehicleTypeSpinner"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
             <Button
-                android:id="@+id/button5"
+                android:id="@+id/btnUpdateInfo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:onClick="createAccount"
-                android:text="@string/save_user_btn_en"
+                android:onClick="updateUserInfo"
+                android:text="Update Information"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/driverFieldsContainer"
-                tools:ignore="OnClick" />
+                app:layout_constraintTop_toBottomOf="@+id/updatePhoneField" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

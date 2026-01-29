@@ -18,6 +18,9 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".activitiesWolt.UserInfoActivity"
+            android:exported="false" />
+        <activity
             android:name=".activitiesWolt.ChatSystem"
             android:exported="false" />
         <activity
