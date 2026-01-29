@@ -100,6 +100,23 @@
                 android:inputType="phone"
                 app:layout_constraintTop_toBottomOf="@+id/labelPhone" />
 
+            <TextView
+                android:id="@+id/labelAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Address"
+                app:layout_constraintStart_toStartOf="@+id/regAddressField"
+                app:layout_constraintTop_toBottomOf="@+id/regPhoneField" />
+
+            <EditText
+                android:id="@+id/regAddressField"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="textPostalAddress"
+                app:layout_constraintTop_toBottomOf="@+id/labelAddress" />
+
             <CheckBox
                 android:id="@+id/regIsDriver"
                 android:layout_width="wrap_content"
@@ -108,7 +125,7 @@
                 android:text="Driver"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/regPhoneField" />
+                app:layout_constraintTop_toBottomOf="@+id/regAddressField" />
 
             <LinearLayout
                 android:id="@+id/driverFieldsContainer"

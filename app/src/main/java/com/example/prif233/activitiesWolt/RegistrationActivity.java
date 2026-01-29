@@ -1,6 +1,7 @@
 package com.example.prif233.activitiesWolt;
 
 import static com.example.prif233.Utils.Constants.CREATE_BASIC_USER_URL;
+import static com.example.prif233.Utils.Constants.CREATE_DRIVER_URL;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -23,10 +24,13 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.prif233.R;
 import com.example.prif233.Utils.RestOperations;
 import com.example.prif233.model.BasicUser;
+import com.example.prif233.model.Driver;
 import com.example.prif233.model.VehicleType;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -70,11 +74,27 @@ public class RegistrationActivity extends AppCompatActivity {
         EditText phone = findViewById(R.id.regPhoneField);
 
         String userInfo = "{}";
-        Gson gson = new Gson();
+        String url = CREATE_BASIC_USER_URL;
+        Gson gson = new GsonBuilder().create();
 
         if (regIsDriver.isChecked()) {
-            // Logic for creating a Driver can be added here
-            // For now, it just demonstrates the UI change
+            EditText licence = findViewById(R.id.regLicenseField);
+            EditText bDate = findViewById(R.id.regBirthDateField);
+            VehicleType vehicleType = (VehicleType) regVehicleTypeSpinner.getSelectedItem();
+
+            Driver driver = new Driver(
+                    login.getText().toString(),
+                    psw.getText().toString(),
+                    name.getText().toString(),
+                    surname.getText().toString(),
+                    phone.getText().toString(),
+                    "addressHardcode", // Or get from another field
+                    licence.getText().toString(),
+                    LocalDate.parse(bDate.getText().toString()), // Assuming YYYY-MM-DD format
+                    vehicleType
+            );
+            userInfo = gson.toJson(driver, Driver.class);
+            url = CREATE_DRIVER_URL;
         } else {
             BasicUser basicUser = new BasicUser(login.getText().toString(), psw.getText().toString(), name.getText().toString(), surname.getText().toString(), phone.getText().toString(), "addressHardcode");
             userInfo = gson.toJson(basicUser, BasicUser.class);
@@ -84,9 +104,10 @@ public class RegistrationActivity extends AppCompatActivity {
         Handler handler = new Handler(Looper.getMainLooper());
 
         String finalUserInfo = userInfo;
+        String finalUrl = url;
         executor.execute(() -> {
             try {
-                String response = RestOperations.sendPost(CREATE_BASIC_USER_URL, finalUserInfo);
+                String response = RestOperations.sendPost(finalUrl, finalUserInfo);
                 handler.post(() -> {
                     if (response != null && !response.equals("Error") && !response.isEmpty()) {
                         Intent intent = new Intent(RegistrationActivity.this, MainActivity.class);

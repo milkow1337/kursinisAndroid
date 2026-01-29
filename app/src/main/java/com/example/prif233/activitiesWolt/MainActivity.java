@@ -57,40 +57,52 @@ public class MainActivity extends AppCompatActivity {
                 String response = RestOperations.sendPost(VALIDATE_USER_URL, info);
                 handler.post(() -> {
                     if (response != null && !response.equals("Error") && !response.isEmpty()) {
-                        JsonObject userResponse = gson.fromJson(response, JsonObject.class);
-                        
-                        // Refined check: Only Driver has 'licence' or 'vehicleType' fields.
-                        // BasicUser and Driver have 'address', while generic User might not.
-                        // Restaurant also extends BasicUser but usually shouldn't have license info.
-                        
-                        boolean isDriver = userResponse.has("licence");
-                        boolean isBasicUser = userResponse.has("address") && !isDriver;
-                        
-                        // If it has "address" but also potentially restaurant fields, it's a restaurant.
-                        // Since your Restaurant class is empty and just extends BasicUser, 
-                        // we need a way to distinguish them if the server doesn't provide a "type" field.
-                        
-                        // Checking if it's explicitly NOT a Driver or BasicUser by checking for Restaurant specific traits if any.
-                        // Alternatively, check for a "type" or "dtype" field which GSON/Hibernate often includes.
-                        
-                        String userType = "";
-                        if (userResponse.has("type")) {
-                             userType = userResponse.get("type").getAsString();
-                        }
+                        try {
+                            JsonObject userResponse = gson.fromJson(response, JsonObject.class);
 
-                        if (userType.equalsIgnoreCase("RESTAURANT")) {
-                            Toast.makeText(MainActivity.this, "Access denied: Restaurants cannot log in.", Toast.LENGTH_LONG).show();
-                        } else {
-                            Intent intent = new Intent(MainActivity.this, WoltRestaurants.class);
-                            intent.putExtra("userJsonObject", response);
-                            startActivity(intent);
+                            // Get the userType field from the backend response
+                            String userType = "";
+                            if (userResponse.has("userType")) {
+                                userType = userResponse.get("userType").getAsString();
+                            }
+
+                            System.out.println("User type from server: " + userType);
+
+                            // Check if this is a Restaurant user - they should use desktop app
+                            if (userType.contains("Restaurant")) {
+                                Toast.makeText(MainActivity.this,
+                                        "Restaurants must use the desktop application. Mobile app is for customers and drivers only.",
+                                        Toast.LENGTH_LONG).show();
+                            } else if (userType.contains("Driver") || userType.contains("BasicUser") || userType.contains("User")) {
+                                // Allow BasicUser (customers) and Drivers to proceed
+                                Intent intent = new Intent(MainActivity.this, WoltRestaurants.class);
+                                intent.putExtra("userJsonObject", response);
+                                startActivity(intent);
+                            } else {
+                                // Unknown user type
+                                Toast.makeText(MainActivity.this,
+                                        "Invalid user type. Please contact support.",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Toast.makeText(MainActivity.this,
+                                    "Error processing login response: " + e.getMessage(),
+                                    Toast.LENGTH_LONG).show();
                         }
                     } else {
-                        Toast.makeText(MainActivity.this, "Invalid credentials or server error.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this,
+                                "Invalid credentials. Please check your username and password.",
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
             } catch (IOException e) {
-                handler.post(() -> Toast.makeText(MainActivity.this, "Network error.", Toast.LENGTH_SHORT).show());
+                e.printStackTrace();
+                handler.post(() ->
+                        Toast.makeText(MainActivity.this,
+                                "Network error. Please check your connection and server status.",
+                                Toast.LENGTH_LONG).show()
+                );
             }
         });
     }

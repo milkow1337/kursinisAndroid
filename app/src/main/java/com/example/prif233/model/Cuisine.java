@@ -1,9 +1,5 @@
 package com.example.prif233.model;
 
-
-
-import java.util.List;
-
 public class Cuisine {
     private int id;
     protected String name;
@@ -62,5 +58,10 @@ public class Cuisine {
 
     public void setVegan(boolean vegan) {
         this.vegan = vegan;
+    }
+
+    @Override
+    public String toString() {
+        return name + " - €" + String.format("%.2f", price);
     }
 }
