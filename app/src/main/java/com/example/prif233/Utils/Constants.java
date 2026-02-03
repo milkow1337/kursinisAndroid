@@ -14,4 +14,5 @@ public class Constants {
     public static final String CREATE_ORDER = HOME_URL + "createOrder";
     public static final String GET_AVAILABLE_ORDERS = HOME_URL + "orders/available";
     public static final String ASSIGN_DRIVER = HOME_URL + "orders/";
+    public static final String GET_USER_BY_ID_URL = HOME_URL + "user/";
 }

@@ -19,7 +19,7 @@ public class Driver extends BasicUser{
     }
 
     public Driver(int id, String login, String password, String name, String surname, String phoneNumber, LocalDateTime dateCreated, LocalDateTime dateUpdated, boolean isAdmin, String address, String licence, LocalDate birthDate, VehicleType vehicleType) {
-        super(id, login, password, name, surname, phoneNumber, dateCreated, dateUpdated, isAdmin, address);
+        super(id, login, password, name, surname, phoneNumber, dateCreated, dateUpdated, isAdmin, address, 0);
         this.licence = licence;
         this.birthDate = birthDate;
         this.vehicleType = vehicleType;

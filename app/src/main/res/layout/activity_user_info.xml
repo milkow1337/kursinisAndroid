@@ -16,100 +16,305 @@
             android:layout_height="wrap_content"
             android:padding="16dp">
 
+            <!-- Page Title -->
             <TextView
-                android:id="@+id/labelLogin"
+                android:id="@+id/pageTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Login"
+                android:text="My Account"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:layout_marginBottom="16dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <EditText
-                android:id="@+id/updateLoginField"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="text"
-                app:layout_constraintTop_toBottomOf="@+id/labelLogin" />
+            <!-- Loading Indicator -->
+            <ProgressBar
+                android:id="@+id/loadingIndicator"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="16dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/pageTitle"
+                app:layout_constraintStart_toEndOf="@+id/pageTitle"
+                app:layout_constraintTop_toTopOf="@+id/pageTitle" />
 
-            <TextView
-                android:id="@+id/labelPassword"
-                android:layout_width="wrap_content"
+            <!-- Loyalty Points Card (only for BasicUser) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/loyaltyPointsCard"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Password"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/updateLoginField" />
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                android:visibility="visible"
+                app:layout_constraintTop_toBottomOf="@+id/pageTitle">
 
-            <EditText
-                android:id="@+id/updatePasswordField"
+                <!-- Gradient background effect using nested layout -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="#FFE0B2"
+                    android:padding="20dp">
+
+                    <!-- Header with icon and title -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="💎 Loyalty Rewards"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#E65100" />
+
+                        <Button
+                            android:id="@+id/btnRefreshPoints"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🔄 Refresh"
+                            android:textSize="12sp"
+                            android:onClick="refreshLoyaltyPoints"
+                            android:textColor="#FF6F00"
+                            android:minHeight="36dp"
+                            android:paddingHorizontal="12dp" />
+                    </LinearLayout>
+
+                    <!-- Points Display -->
+                    <TextView
+                        android:id="@+id/loyaltyPointsText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🎁 0 Points"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        android:textColor="#FF6F00"
+                        android:layout_gravity="center"
+                        android:layout_marginVertical="8dp" />
+
+                    <!-- Value Text -->
+                    <TextView
+                        android:id="@+id/loyaltyPointsValueText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Start earning points with your orders!"
+                        android:textSize="14sp"
+                        android:textColor="#E65100"
+                        android:layout_gravity="center"
+                        android:textAlignment="center" />
+
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#FFCC80"
+                        android:layout_marginVertical="12dp" />
+
+                    <!-- Info Text -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="💡 Earn 1 point for every €10 spent!\n🎯 Use points for discounts on future orders"
+                        android:textSize="12sp"
+                        android:textColor="#BF360C"
+                        android:textAlignment="center"
+                        android:lineSpacingExtra="4dp" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- User Information Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/userInfoCard"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="textPassword"
-                app:layout_constraintTop_toBottomOf="@+id/labelPassword" />
-
-            <TextView
-                android:id="@+id/labelName"
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Name"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/updatePasswordField" />
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                app:layout_constraintTop_toBottomOf="@+id/loyaltyPointsCard">
 
-            <EditText
-                android:id="@+id/updateNameField"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="text"
-                app:layout_constraintTop_toBottomOf="@+id/labelName" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-            <TextView
-                android:id="@+id/labelSurname"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Surname"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/updateNameField" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Account Information"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/black"
+                        android:layout_marginBottom="16dp" />
 
-            <EditText
-                android:id="@+id/updateSurnameField"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="text"
-                app:layout_constraintTop_toBottomOf="@+id/labelSurname" />
+                    <!-- Login Field -->
+                    <TextView
+                        android:id="@+id/labelLogin"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Username"
+                        android:textStyle="bold"
+                        android:textSize="12sp"
+                        android:textColor="@android:color/darker_gray" />
 
-            <TextView
-                android:id="@+id/labelPhone"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Phone"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/updateSurnameField" />
+                    <EditText
+                        android:id="@+id/updateLoginField"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:ems="10"
+                        android:inputType="text"
+                        android:enabled="false"
+                        android:background="@android:drawable/edit_text"
+                        android:padding="12dp"
+                        android:hint="Username (cannot be changed)"
+                        android:textColor="@android:color/darker_gray" />
 
-            <EditText
-                android:id="@+id/updatePhoneField"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="phone"
-                app:layout_constraintTop_toBottomOf="@+id/labelPhone" />
+                    <!-- Password Field -->
+                    <TextView
+                        android:id="@+id/labelPassword"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Password"
+                        android:textStyle="bold"
+                        android:textSize="12sp"
+                        android:textColor="@android:color/darker_gray" />
 
+                    <EditText
+                        android:id="@+id/updatePasswordField"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:ems="10"
+                        android:inputType="textPassword"
+                        android:enabled="false"
+                        android:background="@android:drawable/edit_text"
+                        android:padding="12dp"
+                        android:hint="••••••••"
+                        android:textColor="@android:color/darker_gray" />
+
+                    <!-- Name Field -->
+                    <TextView
+                        android:id="@+id/labelName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="First Name"
+                        android:textStyle="bold"
+                        android:textSize="12sp"
+                        android:textColor="@android:color/darker_gray" />
+
+                    <EditText
+                        android:id="@+id/updateNameField"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:ems="10"
+                        android:inputType="text"
+                        android:padding="12dp"
+                        android:hint="Enter your first name" />
+
+                    <!-- Surname Field -->
+                    <TextView
+                        android:id="@+id/labelSurname"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Last Name"
+                        android:textStyle="bold"
+                        android:textSize="12sp"
+                        android:textColor="@android:color/darker_gray" />
+
+                    <EditText
+                        android:id="@+id/updateSurnameField"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:ems="10"
+                        android:inputType="text"
+                        android:padding="12dp"
+                        android:hint="Enter your last name" />
+
+                    <!-- Phone Field -->
+                    <TextView
+                        android:id="@+id/labelPhone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Phone Number"
+                        android:textStyle="bold"
+                        android:textSize="12sp"
+                        android:textColor="@android:color/darker_gray" />
+
+                    <EditText
+                        android:id="@+id/updatePhoneField"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:ems="10"
+                        android:inputType="phone"
+                        android:padding="12dp"
+                        android:hint="Enter your phone number" />
+
+                    <!-- Address Field (only for BasicUser) -->
+                    <TextView
+                        android:id="@+id/labelAddress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Delivery Address"
+                        android:textStyle="bold"
+                        android:textSize="12sp"
+                        android:textColor="@android:color/darker_gray"
+                        android:visibility="gone" />
+
+                    <EditText
+                        android:id="@+id/updateAddressField"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:inputType="textPostalAddress"
+                        android:padding="12dp"
+                        android:hint="Enter your delivery address"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Update Button -->
             <Button
                 android:id="@+id/btnUpdateInfo"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:onClick="updateUserInfo"
                 android:text="Update Information"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/updatePhoneField" />
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:backgroundTint="#4CAF50"
+                android:paddingVertical="14dp"
+                app:layout_constraintTop_toBottomOf="@+id/userInfoCard" />
+
+            <!-- Info Text -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="24dp"
+                android:text="📝 Username and password cannot be changed here.\nContact support for username changes or use the password reset feature."
+                android:textSize="11sp"
+                android:textColor="@android:color/darker_gray"
+                android:textStyle="italic"
+                android:gravity="center"
+                android:lineSpacingExtra="2dp"
+                app:layout_constraintTop_toBottomOf="@+id/btnUpdateInfo" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
