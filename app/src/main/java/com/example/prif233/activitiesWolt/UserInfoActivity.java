@@ -213,10 +213,55 @@ public class UserInfoActivity extends AppCompatActivity {
     }
 
     public void updateUserInfo(View view) {
-        // Here you would typically send a PUT request to your backend
-        // For now, we'll just show a toast
-        Toast.makeText(this, "Information updated (simulation)", Toast.LENGTH_SHORT).show();
-        finish();
+        // Get updated values from fields
+        String name = nameField.getText().toString().trim();
+        String surname = surnameField.getText().toString().trim();
+        String phone = phoneField.getText().toString().trim();
+        String address = addressField.getText().toString().trim();
+
+        // Validate fields
+        if (name.isEmpty() || surname.isEmpty() || phone.isEmpty()) {
+            Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Create JSON object with updated data
+        JsonObject updateData = new JsonObject();
+        updateData.addProperty("name", name);
+        updateData.addProperty("surname", surname);
+        updateData.addProperty("phoneNumber", phone);
+
+        if (isBasicUser && !address.isEmpty()) {
+            updateData.addProperty("address", address);
+        }
+
+        Executor executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        String updateJson = updateData.toString();
+
+        executor.execute(() -> {
+            try {
+                // Use the profile update endpoint
+                String url = Constants.HOME_URL + "users/" + userId + "/profile";
+                String response = RestOperations.sendPut(url, updateJson);
+
+                handler.post(() -> {
+                    if (response != null && !response.equals("Error")) {
+                        Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Toast.makeText(this, "Failed to update profile", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+                handler.post(() -> {
+                    Toast.makeText(this, "Network error: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
 
     @Override

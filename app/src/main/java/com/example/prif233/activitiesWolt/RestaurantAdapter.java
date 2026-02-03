@@ -35,13 +35,16 @@ public class RestaurantAdapter extends ArrayAdapter<Restaurant> {
             TextView nameTextView = convertView.findViewById(R.id.restaurantName);
             TextView addressTextView = convertView.findViewById(R.id.restaurantAddress);
             TextView phoneTextView = convertView.findViewById(R.id.restaurantPhone);
+            TextView hoursTextView = convertView.findViewById(R.id.restaurantHours);
 
-            // Display restaurant name (name + surname or just name)
-            String restaurantName = restaurant.getName();
-            if (restaurant.getSurname() != null && !restaurant.getSurname().isEmpty()) {
-                restaurantName += " " + restaurant.getSurname();
+            // Display only restaurantName (not name + surname)
+            String restaurantName = restaurant.getRestaurantName();
+            if (restaurantName != null && !restaurantName.isEmpty()) {
+                nameTextView.setText(restaurantName);
+            } else {
+                // Fallback if restaurantName is not set
+                nameTextView.setText(restaurant.getName() != null ? restaurant.getName() : "Restaurant");
             }
-            nameTextView.setText(restaurantName);
 
             // Display address
             if (restaurant.getAddress() != null && !restaurant.getAddress().isEmpty()) {
@@ -56,9 +59,16 @@ public class RestaurantAdapter extends ArrayAdapter<Restaurant> {
             } else {
                 phoneTextView.setText("📞 Phone not available");
             }
+
+            // Display opening and closing times
+            if (restaurant.getOpeningTime() != null && restaurant.getClosingTime() != null) {
+                hoursTextView.setText("🕒 " + restaurant.getOpeningTime() + " - " + restaurant.getClosingTime());
+                hoursTextView.setVisibility(View.VISIBLE);
+            } else {
+                hoursTextView.setVisibility(View.GONE);
+            }
         }
 
         return convertView;
     }
 }
-

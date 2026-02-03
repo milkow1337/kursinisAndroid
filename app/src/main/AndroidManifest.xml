@@ -42,6 +42,9 @@
             android:name=".activitiesWolt.RegistrationActivity"
             android:exported="false" />
         <activity
+            android:name=".activitiesWolt.ChatViewActivity"
+            android:exported="false" />
+        <activity
             android:name=".activitiesWolt.MainActivity"
             android:exported="true">
             <intent-filter>

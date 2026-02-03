@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,6 +20,7 @@ import com.example.prif233.Utils.LocalDateAdapter;
 import com.example.prif233.Utils.LocalDateTimeAdapter;
 import com.example.prif233.model.Cuisine;
 import com.example.prif233.model.FoodOrder;
+import com.example.prif233.model.OrderStatus;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -31,6 +33,8 @@ public class OrderDetailsActivity extends AppCompatActivity {
     private int orderId;
     private int userId;
     private FoodOrder order;
+    private Button btnOpenChat;
+    private Button btnLeaveReview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,17 +62,19 @@ public class OrderDetailsActivity extends AppCompatActivity {
             build.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
             Gson gson = build.create();
             order = gson.fromJson(orderJson, FoodOrder.class);
-            
+
             if (order == null) {
                 throw new Exception("Order parsing failed");
             }
-            
+
             orderId = order.getId();
 
             TextView idText = findViewById(R.id.orderIdText);
             TextView statusText = findViewById(R.id.orderStatusText);
             TextView priceText = findViewById(R.id.orderPriceText);
             ListView itemsList = findViewById(R.id.orderDetailsItemsList);
+            btnOpenChat = findViewById(R.id.btnOpenChat);
+            btnLeaveReview = findViewById(R.id.btnLeaveReview);
 
             idText.setText("Order ID: #" + order.getId());
             statusText.setText("Status: " + order.getOrderStatus());
@@ -79,6 +85,13 @@ public class OrderDetailsActivity extends AppCompatActivity {
                 ArrayAdapter<Cuisine> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
                 itemsList.setAdapter(adapter);
             }
+
+            // Disable review button if order is not completed
+            if (order.getOrderStatus() != OrderStatus.COMPLETED) {
+                btnLeaveReview.setEnabled(false);
+                btnLeaveReview.setText("Review (Order Not Complete)");
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Error loading order details: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -87,9 +100,21 @@ public class OrderDetailsActivity extends AppCompatActivity {
     }
 
     public void openChat(View view) {
-        Intent intentChat = new Intent(this, ChatSystem.class);
+        Intent intentChat = new Intent(this, ChatViewActivity.class);
         intentChat.putExtra("orderId", orderId);
         intentChat.putExtra("userId", userId);
         startActivity(intentChat);
+    }
+
+    public void leaveReview(View view) {
+        if (order.getOrderStatus() != OrderStatus.COMPLETED) {
+            Toast.makeText(this, "You can only review completed orders", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Intent intentReview = new Intent(this, ChatSystem.class);
+        intentReview.putExtra("orderId", orderId);
+        intentReview.putExtra("userId", userId);
+        startActivity(intentReview);
     }
 }

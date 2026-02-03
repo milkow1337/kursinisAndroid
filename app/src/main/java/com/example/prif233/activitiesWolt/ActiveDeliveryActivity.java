@@ -11,11 +11,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.prif233.R;
 import com.example.prif233.Utils.LocalDateTimeAdapter;
@@ -40,50 +36,110 @@ public class ActiveDeliveryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_active_delivery);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
         String orderJson = getIntent().getStringExtra("orderJson");
-        GsonBuilder builder = new GsonBuilder();
-        builder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
-        Gson gson = builder.create();
-        order = gson.fromJson(orderJson, FoodOrder.class);
 
-        TextView orderIdText = findViewById(R.id.deliveryOrderId);
-        TextView customerName = findViewById(R.id.customerName);
-        TextView customerAddress = findViewById(R.id.customerAddress);
-        TextView customerPhone = findViewById(R.id.customerPhone);
-        ListView itemsList = findViewById(R.id.deliveryItemsList);
-
-        orderIdText.setText("Order ID: #" + order.getId());
-        if (order.getBuyer() != null) {
-            customerName.setText("Name: " + order.getBuyer().getName() + " " + order.getBuyer().getSurname());
-            customerAddress.setText("Address: " + order.getBuyer().getAddress());
-            phoneNumber = order.getBuyer().getPhoneNumber();
-            customerPhone.setText("Phone: " + phoneNumber);
+        if (orderJson == null || orderJson.isEmpty()) {
+            Toast.makeText(this, "Error: No order data provided", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
         }
 
-        List<Cuisine> items = order.getCuisineList();
-        if (items != null) {
-            ArrayAdapter<Cuisine> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
-            itemsList.setAdapter(adapter);
-        }
+        try {
+            GsonBuilder builder = new GsonBuilder();
+            builder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
+            Gson gson = builder.create();
+            order = gson.fromJson(orderJson, FoodOrder.class);
 
-        findViewById(R.id.btnCallCustomer).setOnClickListener(v -> {
-            if (phoneNumber != null && !phoneNumber.isEmpty()) {
-                Intent callIntent = new Intent(Intent.ACTION_DIAL);
-                callIntent.setData(Uri.parse("tel:" + phoneNumber));
-                startActivity(callIntent);
+            if (order == null) {
+                Toast.makeText(this, "Error: Failed to parse order data", Toast.LENGTH_SHORT).show();
+                finish();
+                return;
             }
-        });
+
+            TextView orderIdText = findViewById(R.id.deliveryOrderId);
+            TextView customerName = findViewById(R.id.customerName);
+            TextView customerAddress = findViewById(R.id.customerAddress);
+            TextView customerPhone = findViewById(R.id.customerPhone);
+            ListView itemsList = findViewById(R.id.deliveryItemsList);
+
+            if (orderIdText != null) {
+                orderIdText.setText("Order ID: #" + order.getId());
+            }
+
+            if (order.getBuyer() != null) {
+                String buyerName = "Name: ";
+                if (order.getBuyer().getName() != null) {
+                    buyerName += order.getBuyer().getName();
+                }
+                if (order.getBuyer().getSurname() != null) {
+                    buyerName += " " + order.getBuyer().getSurname();
+                }
+                if (customerName != null) {
+                    customerName.setText(buyerName);
+                }
+
+                String buyerAddress = "Address: ";
+                if (order.getBuyer().getAddress() != null) {
+                    buyerAddress += order.getBuyer().getAddress();
+                } else {
+                    buyerAddress += "Not provided";
+                }
+                if (customerAddress != null) {
+                    customerAddress.setText(buyerAddress);
+                }
+
+                phoneNumber = order.getBuyer().getPhoneNumber();
+                String phoneText = "Phone: ";
+                if (phoneNumber != null && !phoneNumber.isEmpty()) {
+                    phoneText += phoneNumber;
+                } else {
+                    phoneText += "Not provided";
+                }
+                if (customerPhone != null) {
+                    customerPhone.setText(phoneText);
+                }
+            } else {
+                if (customerName != null) customerName.setText("Name: Not available");
+                if (customerAddress != null) customerAddress.setText("Address: Not available");
+                if (customerPhone != null) customerPhone.setText("Phone: Not available");
+            }
+
+            List<Cuisine> items = order.getCuisineList();
+            if (items != null && !items.isEmpty() && itemsList != null) {
+                ArrayAdapter<Cuisine> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
+                itemsList.setAdapter(adapter);
+            } else {
+                Toast.makeText(this, "No items in this order", Toast.LENGTH_SHORT).show();
+            }
+
+            View callButton = findViewById(R.id.btnCallCustomer);
+            if (callButton != null) {
+                callButton.setOnClickListener(v -> {
+                    if (phoneNumber != null && !phoneNumber.isEmpty()) {
+                        Intent callIntent = new Intent(Intent.ACTION_DIAL);
+                        callIntent.setData(Uri.parse("tel:" + phoneNumber));
+                        startActivity(callIntent);
+                    } else {
+                        Toast.makeText(this, "Phone number not available", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error loading delivery: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            finish();
+        }
     }
 
     public void markAsDelivered(View view) {
+        if (order == null) {
+            Toast.makeText(this, "Error: Order data not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Executor executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
 
@@ -104,7 +160,9 @@ public class ActiveDeliveryActivity extends AppCompatActivity {
                     }
                 });
             } catch (IOException e) {
-                handler.post(() -> Toast.makeText(this, "Network error", Toast.LENGTH_SHORT).show());
+                e.printStackTrace();
+                handler.post(() -> Toast.makeText(this, "Network error: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show());
             }
         });
     }
