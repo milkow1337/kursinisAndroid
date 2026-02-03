@@ -5,29 +5,29 @@ import java.time.LocalDateTime;
 
 public class Driver extends BasicUser{
     private String licence;
-    private LocalDate bDate;
+    private LocalDate birthDate;
     private VehicleType vehicleType;
 
-    public Driver(String login, String password, String name, String surname, String phoneNumber, String address, String licence, LocalDate bDate, VehicleType vehicleType) {
+    public Driver(String login, String password, String name, String surname, String phoneNumber, String address, String licence, LocalDate birthDate, VehicleType vehicleType) {
         super(login, password, name, surname, phoneNumber, address);
         this.licence = licence;
-        this.bDate = bDate;
+        this.birthDate = birthDate;
         this.vehicleType = vehicleType;
     }
 
     public Driver() {
     }
 
-    public Driver(int id, String login, String password, String name, String surname, String phoneNumber, LocalDateTime dateCreated, LocalDateTime dateUpdated, boolean isAdmin, String address, String licence, LocalDate bDate, VehicleType vehicleType) {
+    public Driver(int id, String login, String password, String name, String surname, String phoneNumber, LocalDateTime dateCreated, LocalDateTime dateUpdated, boolean isAdmin, String address, String licence, LocalDate birthDate, VehicleType vehicleType) {
         super(id, login, password, name, surname, phoneNumber, dateCreated, dateUpdated, isAdmin, address);
         this.licence = licence;
-        this.bDate = bDate;
+        this.birthDate = birthDate;
         this.vehicleType = vehicleType;
     }
 
-    public Driver(String licence, LocalDate bDate, VehicleType vehicleType) {
+    public Driver(String licence, LocalDate birthDate, VehicleType vehicleType) {
         this.licence = licence;
-        this.bDate = bDate;
+        this.birthDate = birthDate;
         this.vehicleType = vehicleType;
     }
 
@@ -39,12 +39,12 @@ public class Driver extends BasicUser{
         this.licence = licence;
     }
 
-    public LocalDate getbDate() {
-        return bDate;
+    public LocalDate getBirthDate() {
+        return birthDate;
     }
 
-    public void setbDate(LocalDate bDate) {
-        this.bDate = bDate;
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
     }
 
     public VehicleType getVehicleType() {

@@ -93,7 +93,7 @@ public class ActiveDeliveryActivity extends AppCompatActivity {
         executor.execute(() -> {
             try {
                 // Update status endpoint: updateOrderStatus/{orderId}
-                String url = "http://10.21.17.15:8080/updateOrderStatus/" + order.getId();
+                String url = "http://192.168.50.103:8080/updateOrderStatus/" + order.getId();
                 String response = RestOperations.sendPut(url, json.toString());
                 handler.post(() -> {
                     if (response != null && !response.equals("Error")) {
