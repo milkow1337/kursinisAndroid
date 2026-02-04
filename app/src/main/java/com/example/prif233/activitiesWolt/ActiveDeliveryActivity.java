@@ -14,6 +14,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.prif233.R;
+import com.example.prif233.Utils.LocalDateAdapter;
 import com.example.prif233.Utils.LocalDateTimeAdapter;
 import com.example.prif233.Utils.RestOperations;
 import com.example.prif233.model.Cuisine;
@@ -23,6 +24,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -47,9 +49,12 @@ public class ActiveDeliveryActivity extends AppCompatActivity {
         }
 
         try {
+            // FIXED: Use proper Gson builder with both date adapters
             GsonBuilder builder = new GsonBuilder();
             builder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
+            builder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
             Gson gson = builder.create();
+
             order = gson.fromJson(orderJson, FoodOrder.class);
 
             if (order == null) {
@@ -148,8 +153,7 @@ public class ActiveDeliveryActivity extends AppCompatActivity {
 
         executor.execute(() -> {
             try {
-                // Update status endpoint: updateOrderStatus/{orderId}
-                String url = "http://192.168.50.103:8080/updateOrderStatus/" + order.getId();
+                String url = "http://192.168.50.163:8080/updateOrderStatus/" + order.getId();
                 String response = RestOperations.sendPut(url, json.toString());
                 handler.post(() -> {
                     if (response != null && !response.equals("Error")) {

@@ -38,6 +38,7 @@ public class MyOrders extends AppCompatActivity {
 
     private int userId;
     private boolean isDriver;
+    private Gson gson;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +54,12 @@ public class MyOrders extends AppCompatActivity {
         Intent intent = getIntent();
         userId = intent.getIntExtra("id", 0);
         isDriver = intent.getBooleanExtra("isDriver", false);
+
+        // FIXED: Initialize Gson with proper date adapters
+        GsonBuilder builder = new GsonBuilder();
+        builder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
+        builder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
+        gson = builder.create();
 
         if (isDriver) {
             setTitle("Delivery History");
@@ -75,30 +82,26 @@ public class MyOrders extends AppCompatActivity {
                 handler.post(() -> {
                     try {
                         if (response != null && !response.equals("Error")) {
-                            GsonBuilder builder = new GsonBuilder();
-                            builder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
-                            builder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
-                            Gson gson = builder.create();
-                            
                             Type ordersListType = new TypeToken<List<FoodOrder>>() {}.getType();
                             List<FoodOrder> ordersListFromJson = gson.fromJson(response, ordersListType);
-                            
+
                             ListView ordersListElement = findViewById(R.id.myOrderList);
                             MyOrdersAdapter adapter = new MyOrdersAdapter(this, ordersListFromJson);
                             ordersListElement.setAdapter(adapter);
 
                             ordersListElement.setOnItemClickListener((parent, view, position, id) -> {
                                 FoodOrder selectedOrder = ordersListFromJson.get(position);
-                                
+
                                 // If it's a driver and the order is not yet completed, go to active delivery screen
-                                // Otherwise, just show details
-                                if (isDriver && selectedOrder.getOrderStatus() != OrderStatus.COMPLETED && 
-                                    selectedOrder.getOrderStatus() != OrderStatus.CANCELLED) {
+                                if (isDriver && selectedOrder.getOrderStatus() != OrderStatus.COMPLETED &&
+                                        selectedOrder.getOrderStatus() != OrderStatus.CANCELLED) {
                                     Intent intentDelivery = new Intent(MyOrders.this, ActiveDeliveryActivity.class);
+                                    // FIXED: Use the same gson instance to serialize
                                     intentDelivery.putExtra("orderJson", gson.toJson(selectedOrder));
                                     startActivity(intentDelivery);
                                 } else {
                                     Intent intentDetails = new Intent(MyOrders.this, OrderDetailsActivity.class);
+                                    // FIXED: Use the same gson instance to serialize
                                     intentDetails.putExtra("orderJson", gson.toJson(selectedOrder));
                                     intentDetails.putExtra("userId", userId);
                                     startActivity(intentDetails);
@@ -112,6 +115,7 @@ public class MyOrders extends AppCompatActivity {
                 });
             } catch (IOException e) {
                 e.printStackTrace();
+                handler.post(() -> Toast.makeText(this, "Network error", Toast.LENGTH_SHORT).show());
             }
         });
     }

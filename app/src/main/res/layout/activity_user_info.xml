@@ -124,7 +124,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="💡 Earn 1 point for every €10 spent!\n🎯 Use points for discounts on future orders"
+                        android:text="1 point for every €10 spent!"
                         android:textSize="12sp"
                         android:textColor="#BF360C"
                         android:textAlignment="center"
@@ -308,7 +308,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="24dp"
-                android:text="📝 Username and password cannot be changed here.\nContact support for username changes or use the password reset feature."
                 android:textSize="11sp"
                 android:textColor="@android:color/darker_gray"
                 android:textStyle="italic"

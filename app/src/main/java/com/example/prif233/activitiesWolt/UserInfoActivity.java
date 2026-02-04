@@ -50,7 +50,6 @@ public class UserInfoActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Initialize views
         loginField = findViewById(R.id.updateLoginField);
         passwordField = findViewById(R.id.updatePasswordField);
         nameField = findViewById(R.id.updateNameField);
@@ -62,12 +61,10 @@ public class UserInfoActivity extends AppCompatActivity {
         loadingIndicator = findViewById(R.id.loadingIndicator);
         loyaltyPointsCard = findViewById(R.id.loyaltyPointsCard);
 
-        // Get user info from intent
         String userInfo = getIntent().getStringExtra("userJsonObject");
         if (userInfo != null) {
             loadUserInfo(userInfo);
 
-            // Refresh user data from server to get latest loyalty points
             if (isBasicUser && userId > 0) {
                 refreshUserData();
             }
@@ -80,17 +77,15 @@ public class UserInfoActivity extends AppCompatActivity {
             build.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
             Gson gson = build.create();
 
-            // Parse as JsonObject to check user type
             JsonObject userJson = gson.fromJson(userInfo, JsonObject.class);
             userType = userJson.has("userType") ? userJson.get("userType").getAsString() : "";
             userId = userJson.has("id") ? userJson.get("id").getAsInt() : 0;
 
-            // Populate common fields
             if (userJson.has("login")) {
                 loginField.setText(userJson.get("login").getAsString());
             }
             if (userJson.has("password")) {
-                passwordField.setText("••••••••"); // Don't show actual password
+                passwordField.setText("••••••••");
             }
             if (userJson.has("name")) {
                 nameField.setText(userJson.get("name").getAsString());
@@ -102,11 +97,9 @@ public class UserInfoActivity extends AppCompatActivity {
                 phoneField.setText(userJson.get("phoneNumber").getAsString());
             }
 
-            // Check if user is BasicUser (has address and loyalty points)
             if (userType.contains("BasicUser") || userType.contains("Driver")) {
                 isBasicUser = true;
 
-                // Show address field
                 if (userJson.has("address")) {
                     String address = userJson.get("address").getAsString();
                     addressField.setText(address);
@@ -114,10 +107,8 @@ public class UserInfoActivity extends AppCompatActivity {
                     findViewById(R.id.labelAddress).setVisibility(View.VISIBLE);
                 }
 
-                // Show loyalty points card
                 loyaltyPointsCard.setVisibility(View.VISIBLE);
 
-                // Display loyalty points (will be updated from server)
                 if (userJson.has("loyaltyPoints")) {
                     int loyaltyPoints = userJson.get("loyaltyPoints").getAsInt();
                     displayLoyaltyPoints(loyaltyPoints);
@@ -125,7 +116,6 @@ public class UserInfoActivity extends AppCompatActivity {
                     displayLoyaltyPoints(0);
                 }
             } else {
-                // Hide address and loyalty points for non-BasicUser
                 addressField.setVisibility(View.GONE);
                 findViewById(R.id.labelAddress).setVisibility(View.GONE);
                 loyaltyPointsCard.setVisibility(View.GONE);
@@ -138,9 +128,7 @@ public class UserInfoActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Refresh user data from server to get latest loyalty points
-     */
+
     private void refreshUserData() {
         loadingIndicator.setVisibility(View.VISIBLE);
 
@@ -149,7 +137,6 @@ public class UserInfoActivity extends AppCompatActivity {
 
         executor.execute(() -> {
             try {
-                // Fetch fresh user data from server
                 String url = Constants.GET_USER_BY_ID_URL + userId;
                 String response = RestOperations.sendGet(url);
 
@@ -161,7 +148,6 @@ public class UserInfoActivity extends AppCompatActivity {
                             Gson gson = new Gson();
                             JsonObject userJson = gson.fromJson(response, JsonObject.class);
 
-                            // Update loyalty points with fresh data
                             if (userJson.has("loyaltyPoints")) {
                                 int loyaltyPoints = userJson.get("loyaltyPoints").getAsInt();
                                 displayLoyaltyPoints(loyaltyPoints);
@@ -183,11 +169,9 @@ public class UserInfoActivity extends AppCompatActivity {
     }
 
     private void displayLoyaltyPoints(int points) {
-        // Main points display
         String pointsText = "🎁 " + points + " Points";
         loyaltyPointsTextView.setText(pointsText);
 
-        // Calculate approximate value (assuming 1 point = €0.10 discount)
         double pointsValue = points * 0.10;
         String valueText;
 
@@ -196,15 +180,12 @@ public class UserInfoActivity extends AppCompatActivity {
         } else if (points < 10) {
             valueText = String.format("Keep ordering to earn more! (≈ €%.2f value)", pointsValue);
         } else {
-            valueText = String.format("Great job! You have ≈ €%.2f in rewards", pointsValue);
+            valueText = String.format("You have ≈ €%.2f in rewards", pointsValue);
         }
 
         loyaltyPointsValueText.setText(valueText);
     }
 
-    /**
-     * Refresh button click handler
-     */
     public void refreshLoyaltyPoints(View view) {
         if (isBasicUser && userId > 0) {
             refreshUserData();
@@ -213,19 +194,16 @@ public class UserInfoActivity extends AppCompatActivity {
     }
 
     public void updateUserInfo(View view) {
-        // Get updated values from fields
         String name = nameField.getText().toString().trim();
         String surname = surnameField.getText().toString().trim();
         String phone = phoneField.getText().toString().trim();
         String address = addressField.getText().toString().trim();
 
-        // Validate fields
         if (name.isEmpty() || surname.isEmpty() || phone.isEmpty()) {
             Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Create JSON object with updated data
         JsonObject updateData = new JsonObject();
         updateData.addProperty("name", name);
         updateData.addProperty("surname", surname);
@@ -242,7 +220,6 @@ public class UserInfoActivity extends AppCompatActivity {
 
         executor.execute(() -> {
             try {
-                // Use the profile update endpoint
                 String url = Constants.HOME_URL + "users/" + userId + "/profile";
                 String response = RestOperations.sendPut(url, updateJson);
 
@@ -267,7 +244,6 @@ public class UserInfoActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh loyalty points when returning to this activity
         if (isBasicUser && userId > 0) {
             refreshUserData();
         }

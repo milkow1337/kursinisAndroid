@@ -30,7 +30,6 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="text"
-                android:hint="Enter your login"
                 app:layout_constraintTop_toBottomOf="@+id/labelLogin" />
 
             <TextView
@@ -48,7 +47,6 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="textPassword"
-                android:hint="Enter your password"
                 app:layout_constraintTop_toBottomOf="@+id/labelPassword" />
 
             <TextView
@@ -66,7 +64,6 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="text"
-                android:hint="Enter your name"
                 app:layout_constraintTop_toBottomOf="@+id/labelName" />
 
             <TextView
@@ -84,7 +81,6 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="text"
-                android:hint="Enter your surname"
                 app:layout_constraintTop_toBottomOf="@+id/labelSurname" />
 
             <TextView
@@ -102,7 +98,6 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="phone"
-                android:hint="Enter your phone number"
                 app:layout_constraintTop_toBottomOf="@+id/labelPhone" />
 
             <!-- FIXED: Added missing address field -->
@@ -121,7 +116,6 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="textPostalAddress"
-                android:hint="Enter your address"
                 app:layout_constraintTop_toBottomOf="@+id/labelAddress" />
 
             <CheckBox
